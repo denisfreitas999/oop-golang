@@ -198,3 +198,220 @@ Fonte: [Formação Go](https://cursos.alura.com.br/formacao-go)
 
     Usar ponteiros como receivers em funções é uma prática comum em Go quando você precisa alterar o estado de uma struct. Isso permite que as alterações feitas dentro da função sejam persistentes e reflitam diretamente na instância original da struct.
 
+4. **Múltiplos Retornos**
+
+    Em Go, as funções e métodos podem retornar múltiplos valores. Isso é útil em situações onde você deseja retornar tanto um resultado primário quanto informações adicionais, como um status ou um erro. O exemplo a seguir demonstra como utilizar múltiplos retornos em um método que realiza depósitos em uma conta corrente.
+
+    **Exemplo de Método com Múltiplos Retornos:**
+    ```go
+    func (c *ContaCorrente) Depositar(valorDoDeposito float64) (string, float64) {
+        podeDepositar := valorDoDeposito > 0
+
+        if podeDepositar {
+            c.saldo += valorDoDeposito
+            return "Depósito realizado com sucesso!", c.saldo
+        } else {
+            return "Não foi possível realizar o depósito. Entre com um valor válido.", c.saldo
+        }
+    }
+    ```
+
+    Neste exemplo:
+
+    1. **Definição do Método `Depositar`:**
+       O método `Depositar` recebe um valor de depósito como argumento e retorna duas informações:
+       - Uma mensagem de status (`string`)
+       - O saldo atual da conta (`float64`)
+
+    2. **Verificação e Atualização:**
+       O método verifica se o valor do depósito é positivo. Se for, o saldo da conta é atualizado e uma mensagem de sucesso é retornada junto com o novo saldo. Caso contrário, uma mensagem de erro é retornada junto com o saldo atual, que não é alterado.
+
+    **Exemplo de Uso de Múltiplos Retornos:**
+    ```go
+    fmt.Println(contaDaCris.Depositar(1000))  // Saída: "Depósito realizado com sucesso!", 2000
+    fmt.Println(*contaDaCris)                // Saída: {Cris 2654 12456 2000}
+
+    status, saldo := contaDaCris.Depositar(200)
+    fmt.Println(status)  // Saída: "Depósito realizado com sucesso!"
+    fmt.Println(saldo)   // Saída: 2200
+    ```
+
+    Neste trecho de código:
+
+    - **Chamada com `fmt.Println`:** 
+      A primeira chamada a `Depositar` é usada diretamente dentro de `fmt.Println`, que imprime os dois valores retornados.
+
+    - **Atribuição a Variáveis:**
+      Na segunda chamada, os valores retornados por `Depositar` são capturados em variáveis separadas, `status` e `saldo`. Isso permite um maior controle sobre como cada valor é manipulado e exibido posteriormente.
+
+    O uso de múltiplos retornos em Go permite que funções e métodos sejam mais expressivos e forneçam informações adicionais sem a necessidade de estruturas mais complexas como tuplas ou objetos. Isso é especialmente útil para retornar um resultado primário e um status ou erro associado.
+
+5. **Go Mod**
+
+    O `go mod` é uma ferramenta usada no Go para gerenciar dependências de projetos, introduzida a partir da versão 1.11 do Go. Com o conceito de módulos, o `go mod` facilita o gerenciamento de bibliotecas e pacotes externos, eliminando a necessidade de configurar o GOPATH e proporcionando uma abordagem mais moderna e eficiente para o controle de dependências.
+
+    **O que é `go.mod`?**
+
+    O arquivo `go.mod` é o arquivo de configuração principal para um módulo Go. Ele contém informações sobre o módulo, incluindo:
+    - O nome do módulo, que geralmente corresponde ao caminho do repositório onde o código está armazenado.
+    - As versões das dependências utilizadas pelo projeto.
+    - Outras informações de configuração do módulo, como os requisitos de versão do Go.
+
+    **Como criar o `go.mod`?**
+
+    Para criar um arquivo `go.mod`, você precisa inicializar um módulo no seu projeto. Isso pode ser feito utilizando o comando `go mod init`. Siga os passos abaixo:
+
+    1. **Abra um terminal e navegue até o diretório do seu projeto.**
+    2. **Execute o comando `go mod init` seguido do caminho do módulo (geralmente o caminho do repositório).**
+       ```sh
+       go mod init exemplo.com/meuprojeto
+       ```
+    3. **O Go criará um arquivo `go.mod` no diretório do projeto com a configuração inicial do módulo.**
+
+    **Benefícios do `go.mod`:**
+
+    - **Gerenciamento Simplificado de Dependências:** O `go mod` facilita o gerenciamento das versões das dependências, permitindo que você especifique versões exatas e bloqueie versões específicas para garantir a consistência do projeto.
+    - **Isolamento do GOPATH:** Com o uso de módulos, não é mais necessário configurar o GOPATH, tornando o gerenciamento de projetos mais simples e menos propenso a erros.
+    - **Reprodutibilidade e Consistência:** O arquivo `go.mod` e o arquivo `go.sum` (que registra as somas de verificação das dependências) ajudam a garantir que todos os desenvolvedores e ambientes de build utilizem as mesmas versões das dependências, promovendo a consistência do projeto.
+    - **Facilidade na Importação de Pacotes:** Com o `go.mod`, você pode importar pacotes diretamente sem precisar ajustar o GOPATH, facilitando a inclusão de bibliotecas externas no seu projeto.
+
+    **Exemplo de `go.mod`:**
+    ```go
+    module exemplo.com/meuprojeto
+
+    go 1.18
+
+    require (
+        github.com/some/dependency v1.2.3
+        github.com/another/dependency v4.5.6
+    )
+    ```
+
+    No exemplo acima, o arquivo `go.mod` define o módulo como `exemplo.com/meuprojeto`, especifica a versão do Go e lista as dependências do projeto com suas versões correspondentes.
+
+    Utilizar `go mod` é uma prática recomendada para projetos Go modernos, pois oferece uma abordagem mais robusta e flexível para gerenciamento de dependências.
+
+6. **Módulos e Pacotes (package)**
+
+    Em Go, um **package** (ou pacote) é uma maneira de organizar o código em módulos reutilizáveis. Um pacote é um conjunto de arquivos Go que estão localizados no mesmo diretório e têm o mesmo nome de pacote. Pacotes permitem que você agrupe funções, tipos e variáveis relacionadas, facilitando a modularização e a reutilização do código.
+
+    **Como funciona?**
+
+    Cada arquivo Go em um diretório faz parte de um pacote. O nome do pacote é declarado no início de cada arquivo com a palavra-chave `package`. Quando você importa um pacote em outro arquivo, pode acessar as funções, tipos e variáveis exportados pelo pacote.
+
+    **Regras de Visibilidade:**
+
+    - **Público:** Identificadores (como funções, métodos, variáveis e tipos) que começam com uma letra maiúscula são exportados e, portanto, públicos. Isso significa que eles podem ser acessados a partir de outros pacotes.
+    - **Privado:** Identificadores que começam com uma letra minúscula não são exportados e, portanto, privados. Esses identificadores só podem ser acessados dentro do próprio pacote.
+
+    **Como utilizar?**
+
+    Para utilizar um pacote, você precisa importá-lo usando a palavra-chave `import`. O caminho do pacote especifica onde ele está localizado. Você pode então acessar os identificadores exportados do pacote.
+
+    **Exemplo:**
+
+    **Arquivo `contas.go` no pacote `contas`:**
+    ```go
+    package contas
+
+    type ContaCorrente struct {
+        Titular       string
+        NumeroAgencia int
+        NumeroConta   int
+        Saldo         float64
+    }
+
+    func (c *ContaCorrente) Sacar(valorDoSaque float64) string {
+        podeSacar := valorDoSaque <= c.Saldo && valorDoSaque > 0
+
+        if podeSacar {
+            c.Saldo -= valorDoSaque
+            return "Saque realizado com sucesso!"
+        } else {
+            return "Saldo insuficiente."
+        }
+    }
+
+    func (c *ContaCorrente) Depositar(valorDoDeposito float64) (string, float64) {
+        podeDepositar := valorDoDeposito > 0
+
+        if podeDepositar {
+            c.Saldo += valorDoDeposito
+            return "Depósito realizado com sucesso!", c.Saldo
+        } else {
+            return "Não foi possível realizar o depósito. Entre com um valor válido.", c.Saldo
+        }
+    }
+
+    func (c *ContaCorrente) Transferir(valorDaTransferencia float64, contaDestino *ContaCorrente) string {
+        podeTransferir := valorDaTransferencia > 0 && c.Saldo > valorDaTransferencia
+
+        if podeTransferir {
+            c.Saldo -= valorDaTransferencia
+            contaDestino.Depositar(valorDaTransferencia)
+            return "Transferência realizada com sucesso!"
+        } else {
+            return "Ocorreu um erro na transferência. Por favor, verifique os valores inseridos."
+        }
+    }
+    ```
+
+    **Arquivo `main.go` no pacote `main`:**
+    ```go
+    package main
+
+    import (
+        "curso-go-poo/pkg/contas"
+        "fmt"
+    )
+
+    func main() {
+        contaDaCris := new(contas.ContaCorrente)
+        contaDaCris.Titular = "Cris Souza"
+        contaDaCris.NumeroAgencia = 2654
+        contaDaCris.NumeroConta = 12456
+        contaDaCris.Saldo = 1000
+        fmt.Println(*contaDaCris)
+
+        // Realizando saques na conta da Cris
+        fmt.Println(contaDaCris.Sacar(500))
+        fmt.Println(*contaDaCris)
+        fmt.Println(contaDaCris.Sacar(1000))
+        fmt.Println(*contaDaCris)
+        fmt.Println(contaDaCris.Depositar(1000))
+        fmt.Println(*contaDaCris)
+        status, saldo := contaDaCris.Depositar(200)
+        fmt.Println(status)
+        fmt.Println(saldo)
+
+        // Criando a conta do Denisson
+        contaDoDenisson := new(contas.ContaCorrente)
+        contaDoDenisson.Titular = "Denisson Freitas"
+        contaDoDenisson.NumeroAgencia = 1222
+        contaDoDenisson.NumeroConta = 35694
+        contaDoDenisson.Saldo = 1200
+        fmt.Println(*contaDoDenisson)
+
+        // Testando transferências
+        fmt.Println("========== Valores iniciais nas contas dos usuários =========")
+        fmt.Println(*contaDoDenisson)
+        fmt.Println(*contaDaCris)
+        fmt.Println("========== Denisson transfere 200 para Cris =================")
+        contaDoDenisson.Transferir(200, contaDaCris)
+        fmt.Println("========== Valores nas contas após a transferência ==========")
+        fmt.Println(*contaDoDenisson)
+        fmt.Println(*contaDaCris)
+        fmt.Println("========== Cris transfere 400 para Denisson =================")
+        contaDaCris.Transferir(400, contaDoDenisson)
+        fmt.Println("========== Valores nas contas após a transferência ==========")
+        fmt.Println(*contaDoDenisson)
+        fmt.Println(*contaDaCris)
+    }
+    ```
+
+    **Explicação:**
+
+    - **Pacote `contas`:** Define o tipo `ContaCorrente` com métodos para sacar, depositar e transferir valores. Os métodos são exportados porque começam com letras maiúsculas, permitindo que sejam usados em outros pacotes.
+    - **Pacote `main`:** Importa o pacote `contas` e utiliza suas funções e tipos para criar e manipular instâncias de `ContaCorrente`. O código realiza operações de saque, depósito e transferência.
+
+    Pacotes são fundamentais para a organização e modularização de projetos Go, ajudando a separar responsabilidades e a manter o código mais limpo e gerenciável.
