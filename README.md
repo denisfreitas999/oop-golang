@@ -11,7 +11,7 @@ Soluções de inteligência artifical e data science.
 
 Fonte: [Formação Go](https://cursos.alura.com.br/formacao-go)
 
-## Cursos
+## Curso
 #### Curso 02 - [Go: Orientação a Objetos](https://www.alura.com.br/curso-online-go-lang-oo)
 
 ## Referências Anteriores

@@ -1,49 +1,53 @@
 package main
 
 import (
+	"curso-go-poo/pkg/clientes"
 	"curso-go-poo/pkg/contas"
 	"fmt"
 )
 
 func main() {
+	// Sem Ponteiros
+	// contaDoDenisson := contas.ContaCorrente{Titular: clientes.Titular{
+    //     Nome: "Bruno",
+    //     CPF: "503.287.640-27",
+    //     Profissao: "Engenheiro DevOps"},
+    //     NumeroAgencia:1222, NumeroConta: 35694, Saldo:43520.25}
+
+    // fmt.Println(contaDoDenisson)
+
+
+	// Com Ponteiros
+	fmt.Println("=========== Conta da Cris ===========")
+	// Cliente Cris
+	clienteCris := new(clientes.Titular)
+	clienteCris.CPF = "063.580.380-10"
+	clienteCris.Nome = "Cris Souza"
+	clienteCris.Profissao = "Médica"
+	// Conta da Cris
 	contaDaCris := new(contas.ContaCorrente)
-	contaDaCris.Titular = "Cris Souza"
+	contaDaCris.Titular = clienteCris
 	contaDaCris.NumeroAgencia = 2654
 	contaDaCris.NumeroConta = 12456
-	contaDaCris.Saldo = 1000
+	contaDaCris.Depositar(12503.29)
+	fmt.Println(*contaDaCris.Titular)
 	fmt.Println(*contaDaCris)
+	fmt.Println(contaDaCris.ConsultarSaldo())
 
-	// Realizando Saques na Conta da Cris
-	fmt.Println(contaDaCris.Sacar(500))
-	fmt.Println(*contaDaCris)
-	fmt.Println(contaDaCris.Sacar(1000))
-	fmt.Println(*contaDaCris)
-	fmt.Println(contaDaCris.Depositar(1000))
-	fmt.Println(*contaDaCris)
-	status, Saldo := contaDaCris.Depositar(200)
-	fmt.Println(status)
-	fmt.Println(Saldo)
-
-	// Criando a conta do Denisson
+	fmt.Println("=========== Conta do Denisson ===========")
+	// Cliente Denisson
+	clienteDenisson := new(clientes.Titular)
+	clienteDenisson.CPF = "538.240.490-90"
+	clienteDenisson.Nome = "Denisson Freitas"
+	clienteDenisson.Profissao = "Engenheiro DevOps"
+	// Conta do Denisson
 	contaDoDenisson := new(contas.ContaCorrente)
-	contaDoDenisson.Titular = "Denisson Freitas"
+	contaDoDenisson.Titular = clienteDenisson
 	contaDoDenisson.NumeroAgencia = 1222
 	contaDoDenisson.NumeroConta = 35694
-	contaDoDenisson.Saldo = 1200
-	fmt.Println(*contaDoDenisson);
-
-	// Testando Transferências
-	fmt.Println("========== Valores iniciais nas contas dos usuários =========")
-	fmt.Println(*contaDoDenisson);
-	fmt.Println(*contaDaCris)
-	fmt.Println("========== Denisson transfere 200 para Cris =================")
-	contaDoDenisson.Transferir(200, contaDaCris)
-	fmt.Println("========== Valores nas contas após a transferência ==========")
-	fmt.Println(*contaDoDenisson);
-	fmt.Println(*contaDaCris)
-	fmt.Println("========== Cris transfere 400 para Denisson =================")
-	contaDaCris.Transferir(400, contaDoDenisson)
-	fmt.Println("========== Valores nas contas após a transferência ==========")
-	fmt.Println(*contaDoDenisson);
-	fmt.Println(*contaDaCris)
+	contaDoDenisson.Depositar(43520.25)
+	fmt.Println(*contaDoDenisson.Titular)
+	fmt.Println(*contaDoDenisson)
+	fmt.Println(contaDoDenisson.ConsultarSaldo())
+	
 }
