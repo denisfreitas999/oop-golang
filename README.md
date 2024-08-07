@@ -96,4 +96,105 @@ Fonte: [Formação Go](https://cursos.alura.com.br/formacao-go)
 
     Ambos os métodos são válidos e podem ser usados conforme a necessidade. A escolha entre eles geralmente depende da clareza desejada e da complexidade da struct.
 
-    
+2. **New e Ponteiros**
+
+    Em Go, além da inicialização direta de structs, é possível manipular e condicionar valores a elas utilizando ponteiros. Utilizar ponteiros pode ser útil quando você precisa modificar a struct em diferentes partes do código ou quando deseja evitar a cópia de grandes estruturas de dados.
+
+    **Ponteiros e a Função `new`:**
+
+    A função `new` em Go é usada para alocar memória para uma nova variável do tipo especificado e retorna um ponteiro para essa variável. Esse ponteiro pode ser utilizado para acessar e modificar a struct diretamente.
+
+    **Exemplo de Uso de Ponteiros com `new`:**
+    ```go
+    // Utilizando ponteiros
+    var contaDaCris *ContaCorrente
+    contaDaCris = new(ContaCorrente)
+    contaDaCris.titular = "Cris"
+    contaDaCris.numeroAgencia = 2654
+    contaDaCris.numeroConta = 12456
+
+    fmt.Println(*contaDaCris)
+    ```
+
+    No exemplo acima:
+
+    1. **Declaração do Ponteiro:**
+       ```go
+       var contaDaCris *ContaCorrente
+       ```
+       Aqui, `contaDaCris` é declarado como um ponteiro para uma `ContaCorrente`.
+
+    2. **Alocação de Memória com `new`:**
+       ```go
+       contaDaCris = new(ContaCorrente)
+       ```
+       A função `new(ContaCorrente)` aloca memória para uma nova `ContaCorrente` e retorna um ponteiro para essa memória. O ponteiro é então atribuído à variável `contaDaCris`.
+
+    3. **Atribuição de Valores:**
+       ```go
+       contaDaCris.titular = "Cris"
+       contaDaCris.numeroAgencia = 2654
+       contaDaCris.numeroConta = 12456
+       ```
+       Os campos da struct são acessados e modificados através do ponteiro. Quando você usa o ponteiro `contaDaCris`, você está manipulando diretamente a instância da struct alocada na memória.
+
+    4. **Impressão da Struct:**
+       ```go
+       fmt.Println(*contaDaCris)
+       ```
+       O operador `*` é usado para desreferenciar o ponteiro e acessar o valor da struct. Sem esse operador, você estaria imprimindo o endereço de memória.
+
+    Usar ponteiros pode ser benéfico para evitar a cópia de structs grandes, reduzir o uso de memória e permitir que você modifique a struct original sem criar cópias adicionais. No entanto, é importante gerenciar ponteiros com cuidado para evitar problemas como referências nulas ou vazamentos de memória.
+
+3. **Funções e Ponteiros**
+
+    Em Go, você pode definir métodos para structs que utilizam ponteiros como receivers. Isso é especialmente útil quando você precisa modificar os campos da struct dentro de uma função, pois o uso de ponteiros permite que a função altere diretamente os dados originais em vez de trabalhar com uma cópia.
+
+    **Exemplo de Uso de Funções com Ponteiros:**
+    ```go
+    func main() {
+        var contaDaCris *ContaCorrente
+        contaDaCris = new(ContaCorrente)
+        contaDaCris.titular = "Cris"
+        contaDaCris.numeroAgencia = 2654
+        contaDaCris.numeroConta = 12456
+        contaDaCris.saldo = 1000
+        fmt.Println(*contaDaCris)
+
+        // Realizando Saque
+        fmt.Println(contaDaCris.sacar(500))
+        fmt.Println(*contaDaCris)
+    }
+
+    func (c *ContaCorrente) sacar(valorDoSaque float64) string {
+        podeSacar := valorDoSaque <= c.saldo && valorDoSaque > 0
+
+        if podeSacar {
+            c.saldo -= valorDoSaque
+            return "Saque realizado com sucesso!"
+        } else {    
+            return "Saldo insuficiente."
+        }
+    }
+    ```
+
+    Neste exemplo:
+
+    1. **Declaração da Struct e Inicialização:**
+       A struct `ContaCorrente` é instanciada usando a função `new`, e os campos da struct são preenchidos com valores.
+
+    2. **Uso de Ponteiros como Receivers:**
+       A função `sacar` é definida com um receiver que é um ponteiro para `ContaCorrente`:
+       ```go
+       func (c *ContaCorrente) sacar(valorDoSaque float64) string
+       ```
+       Isso significa que quando `sacar` é chamado, ele pode modificar diretamente os campos da struct original, como o campo `saldo`.
+
+    3. **Modificação dos Campos:**
+       Dentro da função `sacar`, o valor do saque é subtraído diretamente do saldo da conta, utilizando o ponteiro `c`. Como `c` é um ponteiro, a modificação afeta a struct original em memória, e não uma cópia.
+
+    4. **Chamada da Função:**
+       No `main`, o método `sacar` é chamado usando `contaDaCris.sacar(500)`. Após a execução da função, o saldo da conta é reduzido, refletindo a operação de saque.
+
+    Usar ponteiros como receivers em funções é uma prática comum em Go quando você precisa alterar o estado de uma struct. Isso permite que as alterações feitas dentro da função sejam persistentes e reflitam diretamente na instância original da struct.
+
