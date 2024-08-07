@@ -6,17 +6,15 @@ import (
 	"fmt"
 )
 
+func PagarBoleto(conta verificaConta, valorDoBoleto float64) {
+	conta.Sacar(valorDoBoleto)
+}
+
+type verificaConta interface{
+	Sacar(valor float64) string
+}
+
 func main() {
-	// Sem Ponteiros
-	// contaDoDenisson := contas.ContaCorrente{Titular: clientes.Titular{
-    //     Nome: "Bruno",
-    //     CPF: "503.287.640-27",
-    //     Profissao: "Engenheiro DevOps"},
-    //     NumeroAgencia:1222, NumeroConta: 35694, Saldo:43520.25}
-
-    // fmt.Println(contaDoDenisson)
-
-
 	// Com Ponteiros
 	fmt.Println("=========== Conta da Cris ===========")
 	// Cliente Cris
@@ -49,5 +47,9 @@ func main() {
 	fmt.Println(*contaDoDenisson.Titular)
 	fmt.Println(*contaDoDenisson)
 	fmt.Println(contaDoDenisson.ConsultarSaldo())
-	
+
+
+	fmt.Println("=========== Conta do Denisson : Pagar Boleto ===========")
+	PagarBoleto(contaDoDenisson, 520.25);
+	fmt.Println(contaDoDenisson.ConsultarSaldo())	
 }
