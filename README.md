@@ -25,6 +25,7 @@ Fonte: [Formação Go](https://cursos.alura.com.br/formacao-go)
 5. [Múltiplos Retornos](#05-múltiplos-retornos)
 6. [Go Mod](#06-go-mod)
 7. [Módulos e Pacotes](#07-módulos-e-pacotes-package)
+8. [Composição e Pacotes em Go](#08-composição-e-pacotes-em-go)
 
 ## 01. Golang Orientado a Objetos
 
@@ -443,3 +444,140 @@ func main() {
 - **Pacote `main`:** Importa o pacote `contas` e utiliza suas funções e tipos para criar e manipular instâncias de `ContaCorrente`. O código realiza operações de saque, depósito e transferência.
 
 Pacotes são fundamentais para a organização e modularização de projetos Go, ajudando a separar responsabilidades e a manter o código mais limpo e gerenciável.
+
+## 08. **Composição e Pacotes em Go**
+
+**Composição em Go:**
+
+- **Conceito:** Go não suporta herança tradicional como em outras linguagens orientadas a objetos. Em vez disso, Go usa a composição para promover a reutilização de código. A composição permite que uma estrutura (struct) seja construída a partir de outras estruturas, combinando suas funcionalidades de maneira modular.
+
+- **Exemplo:** No exemplo a seguir, a struct `ContaCorrente` inclui a struct `Titular` como um campo. Isso permite associar informações sobre o titular da conta diretamente à conta corrente, ilustrando a composição em ação.
+
+**Pacotes em Go:**
+
+- **Conceito:** Pacotes são a unidade básica de organização de código em Go. Eles ajudam a agrupar funcionalidades relacionadas e a manter o código organizado e modular. Cada arquivo Go pertence a um pacote, e o nome do pacote é definido no início do arquivo com a palavra-chave `package`.
+
+- **Visibilidade:** Em Go, a visibilidade de funções, métodos e variáveis é determinada pela convenção de nomenclatura: elementos que começam com uma letra maiúscula são exportados e acessíveis fora do pacote, enquanto aqueles que começam com uma letra minúscula são privados ao pacote.
+
+- **Exemplo:** O exemplo a seguir mostra a definição de dois pacotes, `clientes` e `contas`, que contêm structs e métodos relacionados. O pacote `main` importa esses pacotes e utiliza suas funcionalidades para criar e manipular instâncias de `ContaCorrente` e `Titular`.
+
+**Código de Exemplo:**
+
+1. **Pacote `clientes`:** Define a estrutura `Titular`, que armazena informações sobre o cliente.
+
+    ```go
+    package clientes
+
+    type Titular struct {
+        Nome      string
+        CPF       string
+        Profissao string
+    }
+    ```
+
+2. **Pacote `contas`:** Define a estrutura `ContaCorrente`, que utiliza `Titular` como um campo e implementa métodos para operar sobre a conta.
+
+    ```go
+    package contas
+
+    import (
+        "curso-go-poo/pkg/clientes"
+        "fmt"
+    )
+
+    type ContaCorrente struct {
+        Titular       *clientes.Titular
+        NumeroAgencia int
+        NumeroConta   int
+        saldo         float64
+    }
+
+    func (c *ContaCorrente) Sacar(valorDoSaque float64) string {
+        podeSacar := valorDoSaque <= c.saldo && valorDoSaque > 0
+        if podeSacar {
+            c.saldo -= valorDoSaque
+            return "Saque realizado com sucesso!"
+        } else {
+            return "saldo insuficiente."
+        }
+    }
+
+    func (c *ContaCorrente) Depositar(valorDoDeposito float64) (string, float64) {
+        podeDepositar := valorDoDeposito > 0
+        if podeDepositar {
+            c.saldo += valorDoDeposito
+            return "Deposito realizado com sucesso!", c.saldo
+        } else {
+            return "Não foi possível realizar o deposito. Entre com um valor válido.", c.saldo
+        }
+    }
+
+    func (c *ContaCorrente) Transferir(valorDaTransferencia float64, contaDestino *ContaCorrente) string {
+        podeTransferir := valorDaTransferencia > 0 && c.saldo > valorDaTransferencia
+        if podeTransferir {
+            c.saldo -= valorDaTransferencia
+            contaDestino.Depositar(valorDaTransferencia)
+            return "Transferencia realizada com sucesso!"
+        } else {
+            return "Ocorreu um erro na transferência. Por gentileza, cheque se os campos inseridos estão corretos"
+        }
+    }
+
+    func (c *ContaCorrente) ConsultarSaldo() string {
+        return "Seu saldo é " + fmt.Sprintf("%.2f", c.saldo)
+    }
+    ```
+
+3. **Pacote `main`:** Faz uso dos pacotes `clientes` e `contas` para criar e manipular instâncias de `ContaCorrente` e `Titular`.
+
+    ```go
+    package main
+
+    import (
+        "curso-go-poo/pkg/clientes"
+        "curso-go-poo/pkg/contas"
+        "fmt"
+    )
+
+    func main() {
+        // Com Ponteiros
+        fmt.Println("=========== Conta da Cris ===========")
+        // Cliente Cris
+        clienteCris := new(clientes.Titular)
+        clienteCris.CPF = "063.580.380-10"
+        clienteCris.Nome = "Cris Souza"
+        clienteCris.Profissao = "Médica"
+        // Conta da Cris
+        contaDaCris := new(contas.ContaCorrente)
+        contaDaCris.Titular = clienteCris
+        contaDaCris.NumeroAgencia = 2654
+        contaDaCris.NumeroConta = 12456
+        contaDaCris.Depositar(12503.29)
+        fmt.Println(*contaDaCris.Titular)
+        fmt.Println(*contaDaCris)
+        fmt.Println(contaDaCris.ConsultarSaldo())
+
+        fmt.Println("=========== Conta do Denisson ===========")
+        // Cliente Denisson
+        clienteDenisson := new(clientes.Titular)
+        clienteDenisson.CPF = "538.240.490-90"
+        clienteDenisson.Nome = "Denisson Freitas"
+        clienteDenisson.Profissao = "Engenheiro DevOps"
+        // Conta do Denisson
+        contaDoDenisson := new(contas.ContaCorrente)
+        contaDoDenisson.Titular = clienteDenisson
+        contaDoDenisson.NumeroAgencia = 1222
+        contaDoDenisson.NumeroConta = 35694
+        contaDoDenisson.Depositar(43520.25)
+        fmt.Println(*contaDoDenisson.Titular)
+        fmt.Println(*contaDoDenisson)
+        fmt.Println(contaDoDenisson.ConsultarSaldo())
+    }
+    ```
+
+**Considerações:**
+
+- **Composição:** Go usa composição para criar tipos complexos de maneira modular, o que facilita a manutenção e a reutilização de código.
+- **Pacotes:** Os pacotes ajudam a organizar o código de maneira lógica e modular, promovendo boas práticas de desenvolvimento.
+
+Este exemplo demonstra como Go utiliza composição e pacotes para implementar conceitos de OOP de forma eficiente e adaptada à filosofia da linguagem.
