@@ -26,6 +26,7 @@ Fonte: [Formação Go](https://cursos.alura.com.br/formacao-go)
 6. [Go Mod](#06-go-mod)
 7. [Módulos e Pacotes](#07-módulos-e-pacotes-package)
 8. [Composição e Pacotes em Go](#08-composição-e-pacotes-em-go)
+9. [Interface](#09-interface)
 
 ## 01. Golang Orientado a Objetos
 
@@ -581,3 +582,208 @@ Pacotes são fundamentais para a organização e modularização de projetos Go,
 - **Pacotes:** Os pacotes ajudam a organizar o código de maneira lógica e modular, promovendo boas práticas de desenvolvimento.
 
 Este exemplo demonstra como Go utiliza composição e pacotes para implementar conceitos de OOP de forma eficiente e adaptada à filosofia da linguagem.
+
+## 09. **Interface**
+
+Em Go, uma **interface** define um conjunto de métodos que uma struct deve implementar para ser considerada como implementadora dessa interface. Interfaces permitem que diferentes tipos de dados sejam tratados de maneira uniforme, desde que eles implementem os métodos da interface.
+
+#### Estrutura do Projeto
+
+O projeto está organizado em diferentes pacotes e arquivos, conforme a estrutura abaixo:
+
+
+```go
+E:.
+│   go.mod
+│   README.md
+│   
+├───bin
+├───pkg
+│   ├───clientes
+│   │       cliente.go
+│   │
+│   └───contas
+│           conta.go
+│           contaBase.go
+│           contaCorrente.go
+│           contaPoupanca.go
+│
+└───src
+        main.go
+```
+
+**Arquivo `conta.go`**
+
+Define a interface `Conta`, que inclui os métodos que todas as contas devem implementar:
+
+```go
+package contas
+
+type Conta interface {
+	Sacar(valor float64) string
+	Depositar(valor float64) (string, float64)
+	Transferir(valor float64, contaDestino Conta) string
+	ConsultarSaldo() string
+}
+```
+
+Arquivo `contaBase.go`
+
+Implementa uma struct ContaBase com métodos que definem o comportamento comum para todas as contas. Esta struct fornece uma implementação básica para os métodos definidos na interface Conta:
+
+```go
+package contas
+
+import (
+	"curso-go-poo/pkg/clientes"
+	"fmt"
+)
+
+type ContaBase struct {
+	Titular       *clientes.Titular
+	NumeroAgencia int
+	NumeroConta   int
+	saldo         float64
+}
+
+func (c *ContaBase) Sacar(valorDoSaque float64) string {
+	podeSacar := valorDoSaque <= c.saldo && valorDoSaque > 0
+	if podeSacar {
+		c.saldo -= valorDoSaque
+		return "Saque realizado com sucesso!"
+	} else {
+		return "Saldo insuficiente."
+	}
+}
+
+func (c *ContaBase) Depositar(valorDoDeposito float64) (string, float64) {
+	podeDepositar := valorDoDeposito > 0
+	if podeDepositar {
+		c.saldo += valorDoDeposito
+		return "Depósito realizado com sucesso!", c.saldo
+	} else {
+		return "Não foi possível realizar o depósito. Entre com um valor válido.", c.saldo
+	}
+}
+
+func (c *ContaBase) Transferir(valorDaTransferencia float64, contaDestino Conta) string {
+	podeTransferir := valorDaTransferencia > 0 && c.saldo > valorDaTransferencia
+	if podeTransferir {
+		c.saldo -= valorDaTransferencia
+		contaDestino.Depositar(valorDaTransferencia)
+		return "Transferência realizada com sucesso!"
+	} else {
+		return "Ocorreu um erro na transferência. Verifique se os campos inseridos estão corretos."
+	}
+}
+
+func (c *ContaBase) ConsultarSaldo() string {
+	return "Seu saldo é " + fmt.Sprintf("%.2f", c.saldo)
+}
+
+func (c ContaBase) String() string {
+    return fmt.Sprintf("{%s %d %d %.2f}", c.Titular, c.NumeroAgencia, c.NumeroConta, c.saldo)
+}
+```
+
+Arquivo `contaCorrente.go`
+
+Define a struct ContaCorrente que embute ContaBase. Isso significa que ContaCorrente compõe todos os métodos e atributos de ContaBase:
+
+```go
+package contas
+
+type ContaCorrente struct {
+	ContaBase
+}
+```
+
+Arquivo `contaPoupanca.go`
+
+Define a struct ContaPoupanca, que também embute ContaBase e adiciona um campo extra Operacao
+
+```go
+package contas
+
+type ContaPoupanca struct {
+	ContaBase
+	Operacao int
+}
+```
+
+Arquivo `main.go`
+
+Demonstra o uso das structs e da interface. Cria instâncias de ContaCorrente e ContaPoupanca, e utiliza a interface Conta para realizar operações:
+
+```go
+package main
+
+import (
+	"curso-go-poo/pkg/clientes"
+	"curso-go-poo/pkg/contas"
+	"fmt"
+)
+
+func PagarBoleto(conta contas.Conta, valorDoBoleto float64) {
+	conta.Sacar(valorDoBoleto)
+}
+
+func main() {
+	fmt.Println("=========== Conta da Cris ===========")
+	// Cliente Cris
+	clienteCris := &clientes.Titular{
+		CPF:       "063.580.380-10",
+		Nome:      "Cris Souza",
+		Profissao: "Médica",
+	}
+	// Conta da Cris
+	contaDaCris := &contas.ContaCorrente{
+		ContaBase: contas.ContaBase{
+			Titular:       clienteCris,
+			NumeroAgencia: 2654,
+			NumeroConta:   12456,
+		},
+	}
+	contaDaCris.Depositar(12503.29)
+	fmt.Println(*contaDaCris.Titular)
+	fmt.Println(*contaDaCris)
+	fmt.Println(contaDaCris.ConsultarSaldo())
+
+	fmt.Println("=========== Conta do Denisson ===========")
+	// Cliente Denisson
+	clienteDenisson := &clientes.Titular{
+		CPF:       "538.240.490-90",
+		Nome:      "Denisson Freitas",
+		Profissao: "Engenheiro DevOps",
+	}
+	// Conta do Denisson
+	contaDoDenisson := &contas.ContaPoupanca{
+		ContaBase: contas.ContaBase{
+			Titular:       clienteDenisson,
+			NumeroAgencia: 1222,
+			NumeroConta:   35694,
+		},
+		Operacao: 5,
+	}
+	contaDoDenisson.Depositar(43520.25)
+	fmt.Println(*contaDoDenisson.Titular)
+	fmt.Println(*contaDoDenisson)
+	fmt.Println(contaDoDenisson.ConsultarSaldo())
+
+	fmt.Println("=========== Conta do Denisson : Pagar Boleto ===========")
+	PagarBoleto(contaDoDenisson, 520.25)
+	fmt.Println(contaDoDenisson.ConsultarSaldo())
+}
+```
+
+### Resumindo
+
+- **Interface Conta**: Define um contrato que as structs ContaCorrente e ContaPoupanca devem seguir, permitindo uma manipulação uniforme de diferentes tipos de contas.
+
+- **Struct ContaBase**: Fornece a implementação comum para os métodos da interface Conta, evitando duplicação de código.
+
+- **Structs ContaCorrente e ContaPoupanca**: Estendem ContaBase, aproveitando a composição para adicionar ou modificar comportamentos específicos sem redefinir os métodos básicos.
+
+- **Uso da Interface**: No main.go, a função PagarBoleto usa a interface Conta para realizar operações de saque, demonstrando como a interface permite a manipulação de diferentes tipos de contas de forma abstrata e uniforme.
+
+Este exemplo mostra como utilizar interfaces para promover a flexibilidade e a modularidade em Go, facilitando a extensão e manutenção do código.
